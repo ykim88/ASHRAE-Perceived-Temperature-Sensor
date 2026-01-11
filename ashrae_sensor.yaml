@@ -1,0 +1,42 @@
+blueprint:
+  name: ASHRAE Perceived Temperature Sensor
+  description: Blueprint to calculate perceived temperature
+  domain: sensor
+  input:
+    sensor_name:
+      name: Sensor name
+      description: The name that will be assigned to the created sensor (e.g., Living Room Perceived Temperature)
+      selector:
+        text:
+    real_temperature_sensor:
+      name: Ambient Temperature Sensor
+      description: Ambient Temperature Sensor
+      selector:
+        entity:
+          domain: sensor
+    pmv_sensor:
+      name: PMV Sensor
+      description: PMV Sensor
+      selector:
+        entity:
+          domain: sensor
+
+template:
+  - sensor:
+      - name: "{{ sensor_name }}"
+        unique_id: "ashrae_apparent_{{ sensor_name | slugify }}"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {# Load the source sensors #}
+          {% set real_temp = states(inputs.real_temperature_sensor) | float(none) %}
+          {% set pmv = states(inputs.pmv_sensor) | float(none) %}
+          {% if real_temp is not none and pmv is not none %}
+            {# Add the PMV (which is negative) to the real temp #}
+            {{ (real_temp + pmv) | round(1) }}
+          {% else %}
+            unavailable
+          {% endif %}
+        availability: >
+          {{ has_value(real_temperature_sensor) and has_value(pmv_sensor) }}
