@@ -1,7 +1,7 @@
 blueprint:
   name: ASHRAE Perceived Temperature Sensor
   description: Blueprint to calculate perceived temperature
-  domain: sensor
+  domain: template
   input:
     sensor_name:
       name: Sensor name
